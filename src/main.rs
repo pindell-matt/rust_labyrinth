@@ -96,7 +96,29 @@ fn generate_solution(grid: &Vec<Vec<Vec<i32>>>) {
     let src = (0, 0);
     let dst = ((SIZE - 1) as i32, (SIZE - 1) as i32);
     let mut best_MD = calc_manhattan_distance(src, dst);
-    println!("{:?}", best_MD);
+    let ref mut current = (src.0, src.1);
+    while !cells_match(grid, current, dst) {
+        println!("{:?}", cell_data(grid, current) );
+        break;
+        // if {
+        //     // there exists a productive path
+        //     // productive = is a movement option + shortens MD of current to dist
+        // } else {
+        //     best_MD = calc_manhattan_distance(current, dst);
+        //     while calc_manhattan_distance(current, dst) != best_MD
+        // }
+    }
+}
+
+fn cell_data(grid: &Vec<Vec<Vec<i32>>>, coordinates: &(i32, i32)) -> Vec<i32> {
+    let ref data = grid[(coordinates.0) as usize][(coordinates.1) as usize];
+    data.clone()
+}
+
+fn cells_match(grid: &Vec<Vec<Vec<i32>>>, curr: &(i32, i32), dst: (i32, i32)) -> bool {
+    let ref current = grid[(curr.0) as usize][(curr.1) as usize];
+    let ref destination = grid[(dst.0) as usize][(dst.1) as usize];
+    current == destination
 }
 
 fn calc_manhattan_distance(a: (i32, i32), b: (i32, i32)) -> i32 {

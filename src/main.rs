@@ -7,6 +7,7 @@ static SIZE: usize = 8;
 fn main() {
     let maze = generate_maze();
     print_to_console(&maze);
+    generate_solution(&maze);
 }
 
 fn generate_maze() -> Vec<Vec<Vec<i32>>> {
@@ -89,6 +90,19 @@ fn shuffle_contents(check: Vec<String>) -> Vec<String> {
 
 fn are_equal(move_direction: &String, direction: char) -> bool {
     move_direction.to_string() == direction.to_string()
+}
+
+fn generate_solution(grid: &Vec<Vec<Vec<i32>>>) {
+    let src = (0, 0);
+    let dst = ((SIZE - 1) as i32, (SIZE - 1) as i32);
+    let mut best_MD = calc_manhattan_distance(src, dst);
+    println!("{:?}", best_MD);
+}
+
+fn calc_manhattan_distance(a: (i32, i32), b: (i32, i32)) -> i32 {
+    let x_val = (a.0 - b.0).abs();
+    let y_val = (a.1 - b.1).abs();
+    x_val + y_val
 }
 
 fn print_to_console(grid: &Vec<Vec<Vec<i32>>>) {

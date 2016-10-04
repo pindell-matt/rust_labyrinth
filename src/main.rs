@@ -5,13 +5,12 @@ use rand::{thread_rng, Rng};
 static SIZE: usize = 8;
 
 fn main() {
-    let mut grid = create_grid();
-    let maze = generate_maze(grid);
+    let maze = generate_maze();
     print_to_console(&maze);
 }
 
-fn generate_maze(original_grid: Vec<Vec<Vec<i32>>>) -> Vec<Vec<Vec<i32>>> {
-    let mut grid = original_grid.clone();
+fn generate_maze() -> Vec<Vec<Vec<i32>>> {
+    let mut grid = generate_grid();
     let mut r = 0;
     let mut c = 0;
     let mut history = vec![(r, c)];
@@ -19,14 +18,12 @@ fn generate_maze(original_grid: Vec<Vec<Vec<i32>>>) -> Vec<Vec<Vec<i32>>> {
     while history.len() != 0 {
         grid[r][c][4] = 1;
 
-        let mut check = populate_check(r, c, &grid);
+        let check = populate_check(r, c, &grid);
 
         if check.len() != 0 {
             history.push((r, c));
 
-            let mut rng = thread_rng();
-            rng.shuffle(&mut check);
-            let ref move_direction = check[0];
+            let ref move_direction = shuffle_contents(check)[0];
 
             if are_equal(move_direction, 'L') {
                 grid[r][c][0] = 1;
@@ -57,10 +54,16 @@ fn generate_maze(original_grid: Vec<Vec<Vec<i32>>>) -> Vec<Vec<Vec<i32>>> {
             c = popped.1;
         }
     }
+
+    // set start
+    grid[0][0][4] = 2;
+    // set finish
+    grid[SIZE - 1][SIZE - 1][3] = 1;
+
     grid
 }
 
-fn create_grid() -> Vec<Vec<Vec<i32>>> {
+fn generate_grid() -> Vec<Vec<Vec<i32>>> {
     let cell = vec![0; 5];
     let row: Vec<Vec<i32>> = vec![cell; SIZE];
     let grid: Vec<Vec<Vec<i32>>> = vec![row; SIZE];
@@ -75,6 +78,13 @@ fn populate_check(r: usize, c: usize, grid: &Vec<Vec<Vec<i32>>>) -> Vec<String> 
     if c < (SIZE - 1) && grid[r][c + 1][4] == 0 { check.push('R'.to_string()); };
     if r < (SIZE - 1) && grid[r + 1][c][4] == 0 { check.push('D'.to_string()); };
     check
+}
+
+fn shuffle_contents(check: Vec<String>) -> Vec<String> {
+    let mut cloned = check.clone();
+    let mut rng = thread_rng();
+    rng.shuffle(&mut cloned);
+    cloned
 }
 
 fn are_equal(move_direction: &String, direction: char) -> bool {

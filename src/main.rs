@@ -154,6 +154,16 @@ mod tests {
     }
 
     #[test]
+    fn cells_are_five_element_vecs_defaulting_to_zero() {
+        let grid = generate_grid();
+        assert_eq!(5, grid[0][0].len());
+        assert_eq!(0, grid[0][0][0]);
+        assert_eq!(0, grid[0][0][1]);
+        assert_eq!(0, grid[0][0][2]);
+        assert_eq!(0, grid[0][0][3]);
+    }
+
+    #[test]
     fn returns_true_if_equal() {
         let string = "L".to_string();
         assert!(are_equal(&string, 'L'));

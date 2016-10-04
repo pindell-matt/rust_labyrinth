@@ -19,39 +19,34 @@ fn generate_maze(original_grid: Vec<Vec<Vec<i32>>>) -> Vec<Vec<Vec<i32>>> {
     while history.len() != 0 {
         grid[r][c][4] = 1;
 
-        let mut check = vec![];
-        if c > 0 && grid[r][c - 1][4] == 0 { check.push('L'); };
-        if r > 0 && grid[r - 1][c][4] == 0 { check.push('U'); };
-
-        if c < (SIZE - 1) && grid[r][c + 1][4] == 0 { check.push('R'); };
-        if r < (SIZE - 1) && grid[r + 1][c][4] == 0 { check.push('D'); };
+        let mut check = populate_check(r, c, &grid);
 
         if check.len() != 0 {
             history.push((r, c));
 
             let mut rng = thread_rng();
             rng.shuffle(&mut check);
-            let move_direction = check[0];
+            let ref move_direction = check[0];
 
-            if move_direction == 'L' {
+            if are_equal(move_direction, 'L') {
                 grid[r][c][0] = 1;
                 c -= 1;
                 grid[r][c][2] = 1;
             }
 
-            if move_direction == 'U' {
+            if are_equal(move_direction, 'U') {
                 grid[r][c][1] = 1;
                 r -= 1;
                 grid[r][c][3] = 1;
             }
 
-            if move_direction == 'R' {
+            if are_equal(move_direction, 'R') {
                 grid[r][c][2] = 1;
                 c += 1;
                 grid[r][c][0] = 1;
             }
 
-            if move_direction == 'D' {
+            if are_equal(move_direction, 'D') {
                 grid[r][c][3] = 1;
                 r += 1;
                 grid[r][c][1] = 1;
@@ -70,6 +65,20 @@ fn create_grid() -> Vec<Vec<Vec<i32>>> {
     let row: Vec<Vec<i32>> = vec![cell; SIZE];
     let grid: Vec<Vec<Vec<i32>>> = vec![row; SIZE];
     grid
+}
+
+fn populate_check(r: usize, c: usize, grid: &Vec<Vec<Vec<i32>>>) -> Vec<String> {
+    let mut check = vec![];
+    if c > 0 && grid[r][c - 1][4] == 0 { check.push('L'.to_string()); };
+    if r > 0 && grid[r - 1][c][4] == 0 { check.push('U'.to_string()); };
+
+    if c < (SIZE - 1) && grid[r][c + 1][4] == 0 { check.push('R'.to_string()); };
+    if r < (SIZE - 1) && grid[r + 1][c][4] == 0 { check.push('D'.to_string()); };
+    check
+}
+
+fn are_equal(move_direction: &String, direction: char) -> bool {
+    move_direction.to_string() == direction.to_string()
 }
 
 fn print_to_console(grid: &Vec<Vec<Vec<i32>>>) {

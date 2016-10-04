@@ -56,7 +56,7 @@ fn main() {
             c = popped.1;
         }
     }
-    println!("{:?}", grid);
+    print_to_console(&grid);
 }
 
 fn create_grid() -> Vec<Vec<Vec<i32>>> {
@@ -64,6 +64,14 @@ fn create_grid() -> Vec<Vec<Vec<i32>>> {
     let row: Vec<Vec<i32>> = vec![cell; SIZE];
     let grid: Vec<Vec<Vec<i32>>> = vec![row; SIZE];
     return grid
+}
+
+fn print_to_console(grid: &Vec<Vec<Vec<i32>>>) {
+    println!("");
+    for row in 0..grid.len() {
+        println!("{:?}", &grid[0]);
+    }
+    println!("");
 }
 
 #[cfg(test)]

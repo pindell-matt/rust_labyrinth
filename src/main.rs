@@ -70,6 +70,7 @@ fn print_to_console(grid: &Vec<Vec<Vec<i32>>>) {
     println!("");
     for row in 0..grid.len() {
         print_vertical_walls(&grid[row]);
+        print_horizontal_walls(&grid[row]);
     }
     println!("");
 }
@@ -86,6 +87,20 @@ fn print_vertical_walls(row: &Vec<Vec<i32>>) {
     }
     let joined = vertical.join("");
     println!("{:?}", joined);
+}
+
+fn print_horizontal_walls(row: &Vec<Vec<i32>>) {
+    let mut horizontal = vec!["+"];
+    for cell in row {
+        if cell[3] == 1 {
+            horizontal.push("   +");
+        } else {
+            horizontal.push("---+");
+        }
+    }
+    let joined = horizontal.join("");
+    println!("{:?}", joined);
+
 }
 
 #[cfg(test)]

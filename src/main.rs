@@ -69,10 +69,24 @@ fn create_grid() -> Vec<Vec<Vec<i32>>> {
 fn print_to_console(grid: &Vec<Vec<Vec<i32>>>) {
     println!("");
     for row in 0..grid.len() {
+        if row == 0 { print_top_row(&grid[row]); };
         print_vertical_walls(&grid[row]);
         print_horizontal_walls(&grid[row]);
     }
     println!("");
+}
+
+fn print_top_row(row: &Vec<Vec<i32>>) {
+    let mut top = vec!["+"];
+    for cell in row {
+        if cell[4] == 2 {
+            top.push("   +");
+        } else {
+            top.push("---+");
+        }
+    }
+    let joined = top.join("");
+    println!("{:?}", joined);
 }
 
 fn print_vertical_walls(row: &Vec<Vec<i32>>) {
@@ -100,7 +114,6 @@ fn print_horizontal_walls(row: &Vec<Vec<i32>>) {
     }
     let joined = horizontal.join("");
     println!("{:?}", joined);
-
 }
 
 #[cfg(test)]

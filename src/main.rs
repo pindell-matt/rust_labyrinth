@@ -63,7 +63,7 @@ fn create_grid() -> Vec<Vec<Vec<i32>>> {
     let cell = vec![0; 5];
     let row: Vec<Vec<i32>> = vec![cell; SIZE];
     let grid: Vec<Vec<Vec<i32>>> = vec![row; SIZE];
-    return grid
+    grid
 }
 
 fn print_to_console(grid: &Vec<Vec<Vec<i32>>>) {

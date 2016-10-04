@@ -143,12 +143,21 @@ fn print_horizontal_walls(row: &Vec<Vec<i32>>) {
 
 #[cfg(test)]
 mod tests {
-    use super::create_grid;
+    use super::generate_grid;
+    use super::are_equal;
 
     #[test]
-    fn can_create_grid_of_nested_vecs() {
-        let grid = create_grid();
+    fn can_generate_grid_of_nested_vecs() {
+        let grid = generate_grid();
         assert_eq!(8, grid.len());
         assert_eq!(8, grid[0].len());
     }
+
+    #[test]
+    fn returns_true_if_equal() {
+        let string = "L".to_string();
+        assert!(are_equal(&string, 'L'));
+        assert_eq!(false, are_equal(&string, 'R'));
+    }
+
 }

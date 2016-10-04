@@ -6,6 +6,12 @@ static SIZE: usize = 8;
 
 fn main() {
     let mut grid = create_grid();
+    let maze = generate_maze(grid);
+    print_to_console(&maze);
+}
+
+fn generate_maze(original_grid: Vec<Vec<Vec<i32>>>) -> Vec<Vec<Vec<i32>>> {
+    let mut grid = original_grid.clone();
     let mut r = 0;
     let mut c = 0;
     let mut history = vec![(r, c)];
@@ -56,7 +62,7 @@ fn main() {
             c = popped.1;
         }
     }
-    print_to_console(&grid);
+    grid
 }
 
 fn create_grid() -> Vec<Vec<Vec<i32>>> {

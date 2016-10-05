@@ -5,9 +5,30 @@ use rand::{thread_rng, Rng};
 static SIZE: usize = 8;
 
 fn main() {
-    let maze = generate_maze();
+    let mut maze = generate_maze();
     print_to_console(&maze);
-    generate_solution(&maze);
+
+    // set visited status to 0
+    let mut solution = reset_maze(maze);
+    let result = generate_solution(&solution);
+    for row in result {
+        println!("{:?}", row);
+    }
+
+}
+
+fn reset_maze(mut maze: Vec<Vec<Vec<i32>>>) -> Vec<Vec<Vec<i32>>> {
+    let mut solution = vec![];
+    for row in maze {
+        let mut new_row = vec![];
+        for cell in row {
+            let mut clone_cell = cell.clone();
+            clone_cell[4] = 0;
+            new_row.push(clone_cell);
+        }
+        solution.push(new_row);
+    }
+    solution
 }
 
 fn generate_maze() -> Vec<Vec<Vec<i32>>> {
@@ -92,52 +113,64 @@ fn are_equal(move_direction: &String, direction: char) -> bool {
     move_direction.to_string() == direction.to_string()
 }
 
-fn generate_solution(grid: &Vec<Vec<Vec<i32>>>) {
+fn generate_solution(grid: &Vec<Vec<Vec<i32>>>) -> Vec<Vec<Vec<i32>>>{
+    let mut solution = grid.clone();
     let src = (0, 0);
     let dst = ((SIZE - 1) as i32, (SIZE - 1) as i32);
-    let mut best_MD = calc_MD(src, dst);
-    let ref mut current = (src.0, src.1);
+
+    let mut best_md = calc_MD(src, dst);
+    let mut current = (0, 0);
+
     while !cells_match(grid, current, dst) {
-        if productive_path_available(current, cell_data(grid, current), best_MD, dst) {
-            println!("{:?}", most_productive_path(current, cell_data(grid, current), best_MD, dst));
-            // take productive path
-            // update best_MD
-            // update current
-            break;
+        if productive_path_available(current, cell_data(grid, current), best_md, dst) {
+            let path = most_productive_path(current, cell_data(grid, current), best_md, dst);
+
+            // mark previous current as visited on solution grid
+            solution[(current.0) as usize][(current.1) as usize][4] = 1;
+
+            current = path[0].1;
+            best_md = calc_MD(current, dst);
+            // mark previous current as visited?
         } else {
-            // best_MD = calc_MD(current, dst);
+            best_md = calc_MD(current, dst);
+
             break;
         }
     }
+
+    solution
 }
 
-// L U R D
-// 0 1 2 3
-
-fn most_productive_path(curr: &(i32, i32), curr_data: Vec<i32>, best_MD: i32, dst: (i32, i32)) -> Vec<i32> {
+fn most_productive_path(curr: (i32, i32), curr_data: Vec<i32>, best_md: i32, dst: (i32, i32)) -> Vec<(i32, (i32, i32))> {
     let mut paths = vec![];
-    if curr_data[0] == 1 && calc_MD((curr.0 - 1, curr.1), dst) < best_MD { paths.push(calc_MD((curr.0 - 1, curr.1), dst)); }
-    if curr_data[1] == 1 && calc_MD((curr.0, curr.1 - 1), dst) < best_MD { paths.push(calc_MD((curr.0, curr.1 - 1), dst)); }
-    if curr_data[2] == 1 && calc_MD((curr.0 + 1, curr.1), dst) < best_MD { paths.push(calc_MD((curr.0 + 1, curr.1), dst)); }
-    if curr_data[3] == 1 && calc_MD((curr.0, curr.1 + 1), dst) < best_MD { paths.push(calc_MD((curr.0, curr.1 + 1), dst)); }
+    let left  = (curr.0, curr.1 - 1);
+    let right = (curr.0, curr.1 + 1);
+    let up    = (curr.0 - 1, curr.1);
+    let down  = (curr.0 + 1, curr.1);
+
+    if curr_data[0] == 1 && calc_MD(left, dst) <= best_md { paths.push( (calc_MD(left, dst), left) ); }
+    if curr_data[1] == 1 && calc_MD(up, dst) <= best_md { paths.push( (calc_MD(up, dst), up) ); }
+    if curr_data[2] == 1 && calc_MD(right, dst) <= best_md { paths.push( (calc_MD(right, dst), right) ); }
+    if curr_data[3] == 1 && calc_MD(down, dst) <= best_md { paths.push( (calc_MD(down, dst), down) ); }
+
     paths.sort();
     paths
 }
 
-fn productive_path_available(curr: &(i32, i32), curr_data: Vec<i32>, best_MD: i32, dst: (i32, i32)) -> bool {
-    if curr_data[0] == 1 && calc_MD((curr.0 - 1, curr.1), dst) < best_MD { return true; }
-    if curr_data[1] == 1 && calc_MD((curr.0, curr.1 - 1), dst) < best_MD { return true; }
-    if curr_data[2] == 1 && calc_MD((curr.0 + 1, curr.1), dst) < best_MD { return true; }
-    if curr_data[3] == 1 && calc_MD((curr.0, curr.1 + 1), dst) < best_MD { return true; }
+fn productive_path_available(curr: (i32, i32), curr_data: Vec<i32>, best_md: i32, dst: (i32, i32)) -> bool {
+    if curr_data[0] == 1 && calc_MD((curr.0 - 1, curr.1), dst) <= best_md { return true; }
+    if curr_data[1] == 1 && calc_MD((curr.0, curr.1 - 1), dst) <= best_md { return true; }
+    if curr_data[2] == 1 && calc_MD((curr.0 + 1, curr.1), dst) <= best_md { return true; }
+    if curr_data[3] == 1 && calc_MD((curr.0, curr.1 + 1), dst) <= best_md { return true; }
     false
 }
 
-fn cell_data(grid: &Vec<Vec<Vec<i32>>>, coordinates: &(i32, i32)) -> Vec<i32> {
+fn cell_data(grid: &Vec<Vec<Vec<i32>>>, coordinates: (i32, i32)) -> Vec<i32> {
     let ref data = grid[(coordinates.0) as usize][(coordinates.1) as usize];
     data.clone()
 }
 
-fn cells_match(grid: &Vec<Vec<Vec<i32>>>, curr: &(i32, i32), dst: (i32, i32)) -> bool {
+fn cells_match(grid: &Vec<Vec<Vec<i32>>>, curr: (i32, i32), dst: (i32, i32)) -> bool {
     let ref current = grid[(curr.0) as usize][(curr.1) as usize];
     let ref destination = grid[(dst.0) as usize][(dst.1) as usize];
     current == destination

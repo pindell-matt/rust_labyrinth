@@ -95,19 +95,41 @@ fn are_equal(move_direction: &String, direction: char) -> bool {
 fn generate_solution(grid: &Vec<Vec<Vec<i32>>>) {
     let src = (0, 0);
     let dst = ((SIZE - 1) as i32, (SIZE - 1) as i32);
-    let mut best_MD = calc_manhattan_distance(src, dst);
+    let mut best_MD = calc_MD(src, dst);
     let ref mut current = (src.0, src.1);
     while !cells_match(grid, current, dst) {
-        println!("{:?}", cell_data(grid, current) );
-        break;
-        // if {
-        //     // there exists a productive path
-        //     // productive = is a movement option + shortens MD of current to dist
-        // } else {
-        //     best_MD = calc_manhattan_distance(current, dst);
-        //     while calc_manhattan_distance(current, dst) != best_MD
-        // }
+        if productive_path_available(current, cell_data(grid, current), best_MD, dst) {
+            println!("{:?}", most_productive_path(current, cell_data(grid, current), best_MD, dst));
+            // take productive path
+            // update best_MD
+            // update current
+            break;
+        } else {
+            // best_MD = calc_MD(current, dst);
+            break;
+        }
     }
+}
+
+// L U R D
+// 0 1 2 3
+
+fn most_productive_path(curr: &(i32, i32), curr_data: Vec<i32>, best_MD: i32, dst: (i32, i32)) -> Vec<i32> {
+    let mut paths = vec![];
+    if curr_data[0] == 1 && calc_MD((curr.0 - 1, curr.1), dst) < best_MD { paths.push(calc_MD((curr.0 - 1, curr.1), dst)); }
+    if curr_data[1] == 1 && calc_MD((curr.0, curr.1 - 1), dst) < best_MD { paths.push(calc_MD((curr.0, curr.1 - 1), dst)); }
+    if curr_data[2] == 1 && calc_MD((curr.0 + 1, curr.1), dst) < best_MD { paths.push(calc_MD((curr.0 + 1, curr.1), dst)); }
+    if curr_data[3] == 1 && calc_MD((curr.0, curr.1 + 1), dst) < best_MD { paths.push(calc_MD((curr.0, curr.1 + 1), dst)); }
+    paths.sort();
+    paths
+}
+
+fn productive_path_available(curr: &(i32, i32), curr_data: Vec<i32>, best_MD: i32, dst: (i32, i32)) -> bool {
+    if curr_data[0] == 1 && calc_MD((curr.0 - 1, curr.1), dst) < best_MD { return true; }
+    if curr_data[1] == 1 && calc_MD((curr.0, curr.1 - 1), dst) < best_MD { return true; }
+    if curr_data[2] == 1 && calc_MD((curr.0 + 1, curr.1), dst) < best_MD { return true; }
+    if curr_data[3] == 1 && calc_MD((curr.0, curr.1 + 1), dst) < best_MD { return true; }
+    false
 }
 
 fn cell_data(grid: &Vec<Vec<Vec<i32>>>, coordinates: &(i32, i32)) -> Vec<i32> {
@@ -121,7 +143,7 @@ fn cells_match(grid: &Vec<Vec<Vec<i32>>>, curr: &(i32, i32), dst: (i32, i32)) ->
     current == destination
 }
 
-fn calc_manhattan_distance(a: (i32, i32), b: (i32, i32)) -> i32 {
+fn calc_MD(a: (i32, i32), b: (i32, i32)) -> i32 {
     let x_val = (a.0 - b.0).abs();
     let y_val = (a.1 - b.1).abs();
     x_val + y_val

@@ -2,7 +2,7 @@ extern crate rand;
 
 use rand::{thread_rng, Rng};
 
-static SIZE: usize = 8;
+static SIZE: usize = 4;
 
 fn main() {
     let mut maze = generate_maze();
@@ -10,7 +10,10 @@ fn main() {
 
     // set visited status to 0
     let mut solution = reset_maze(maze);
+
     let result = generate_solution(&solution);
+
+    // temporary data check
     for row in result {
         println!("{:?}", row);
     }
@@ -120,25 +123,44 @@ fn generate_solution(grid: &Vec<Vec<Vec<i32>>>) -> Vec<Vec<Vec<i32>>>{
 
     let mut best_md = calc_MD(src, dst);
     let mut current = (0, 0);
+    solution[(current.0) as usize][(current.1) as usize][4] = 1;
 
-    while !cells_match(grid, current, dst) {
-        if productive_path_available(current, cell_data(grid, current), best_md, dst) {
-            let path = most_productive_path(current, cell_data(grid, current), best_md, dst);
-
-            // mark previous current as visited on solution grid
-            solution[(current.0) as usize][(current.1) as usize][4] = 1;
-
+    while !cells_match(current, dst) {
+        if productive_path_available(&grid, current, best_md, dst) {
+            let path = most_productive_path(current, cell_data(&solution, current), best_md, dst);
             current = path[0].1;
             best_md = calc_MD(current, dst);
-            // mark previous current as visited?
+            solution[(current.0) as usize][(current.1) as usize][4] = 1;
         } else {
-            best_md = calc_MD(current, dst);
 
+            while next_avail_path(&solution, current, cell_data(&solution, current)) != current {
+                current = next_avail_path(&solution, current, cell_data(&solution, current));
+                solution[(current.0) as usize][(current.1) as usize][4] = 1;
+            }
             break;
         }
     }
 
     solution
+}
+
+fn next_avail_path(grid: &Vec<Vec<Vec<i32>>>, curr: (i32, i32), curr_data: Vec<i32>) -> (i32, i32) {
+    let left  = (curr.0, curr.1 - 1);
+    let right = (curr.0, curr.1 + 1);
+    let up    = (curr.0 - 1, curr.1);
+    let down  = (curr.0 + 1, curr.1);
+
+    println!("{:?}", curr_data);
+
+    if curr_data[0] == 1 && grid[(left.0) as usize][(left.1) as usize][4] == 0 { return left; }
+    println!("not left");
+    if curr_data[1] == 1 && grid[(up.0) as usize][(up.1) as usize][4] == 0 { return up; }
+    println!("not up");
+    if curr_data[2] == 1 && grid[(right.0) as usize][(right.1) as usize][4] == 0 { return right; }
+    println!("not right");
+    if curr_data[3] == 1 && grid[(down.0) as usize][(down.1) as usize][4] == 0 { return down; }
+    println!("outta ideas");
+    curr
 }
 
 fn most_productive_path(curr: (i32, i32), curr_data: Vec<i32>, best_md: i32, dst: (i32, i32)) -> Vec<(i32, (i32, i32))> {
@@ -148,6 +170,7 @@ fn most_productive_path(curr: (i32, i32), curr_data: Vec<i32>, best_md: i32, dst
     let up    = (curr.0 - 1, curr.1);
     let down  = (curr.0 + 1, curr.1);
 
+    // check move is to unvisited cell?
     if curr_data[0] == 1 && calc_MD(left, dst) <= best_md { paths.push( (calc_MD(left, dst), left) ); }
     if curr_data[1] == 1 && calc_MD(up, dst) <= best_md { paths.push( (calc_MD(up, dst), up) ); }
     if curr_data[2] == 1 && calc_MD(right, dst) <= best_md { paths.push( (calc_MD(right, dst), right) ); }
@@ -157,11 +180,17 @@ fn most_productive_path(curr: (i32, i32), curr_data: Vec<i32>, best_md: i32, dst
     paths
 }
 
-fn productive_path_available(curr: (i32, i32), curr_data: Vec<i32>, best_md: i32, dst: (i32, i32)) -> bool {
-    if curr_data[0] == 1 && calc_MD((curr.0 - 1, curr.1), dst) <= best_md { return true; }
-    if curr_data[1] == 1 && calc_MD((curr.0, curr.1 - 1), dst) <= best_md { return true; }
-    if curr_data[2] == 1 && calc_MD((curr.0 + 1, curr.1), dst) <= best_md { return true; }
-    if curr_data[3] == 1 && calc_MD((curr.0, curr.1 + 1), dst) <= best_md { return true; }
+fn productive_path_available(grid: &Vec<Vec<Vec<i32>>>, curr: (i32, i32), best_md: i32, dst: (i32, i32)) -> bool {
+    let curr_data = cell_data(grid, curr);
+    let left  = (curr.0, curr.1 - 1);
+    let right = (curr.0, curr.1 + 1);
+    let up    = (curr.0 - 1, curr.1);
+    let down  = (curr.0 + 1, curr.1);
+
+    if curr_data[0] == 1 && calc_MD(left, dst) <= best_md && grid[(left.0) as usize][(left.1) as usize][4] == 0 { return true; }
+    if curr_data[1] == 1 && calc_MD(up, dst) <= best_md && grid[(up.0) as usize][(up.1) as usize][4] == 0 { return true; }
+    if curr_data[2] == 1 && calc_MD(right, dst) <= best_md && grid[(right.0) as usize][(right.1) as usize][4] == 0 { return true; }
+    if curr_data[3] == 1 && calc_MD(down, dst) <= best_md && grid[(down.0) as usize][(down.1) as usize][4] == 0 { return true; }
     false
 }
 
@@ -170,13 +199,12 @@ fn cell_data(grid: &Vec<Vec<Vec<i32>>>, coordinates: (i32, i32)) -> Vec<i32> {
     data.clone()
 }
 
-fn cells_match(grid: &Vec<Vec<Vec<i32>>>, curr: (i32, i32), dst: (i32, i32)) -> bool {
-    let ref current = grid[(curr.0) as usize][(curr.1) as usize];
-    let ref destination = grid[(dst.0) as usize][(dst.1) as usize];
-    current == destination
+fn cells_match(current: (i32, i32), destination: (i32, i32)) -> bool {
+    current.0 == destination.0 && current.1 == destination.1
 }
 
 fn calc_MD(a: (i32, i32), b: (i32, i32)) -> i32 {
+    // flip these for accuracy
     let x_val = (a.0 - b.0).abs();
     let y_val = (a.1 - b.1).abs();
     x_val + y_val

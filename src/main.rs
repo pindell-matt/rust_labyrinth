@@ -2,7 +2,7 @@ extern crate rand;
 
 use rand::{thread_rng, Rng};
 
-static SIZE: usize = 4;
+static SIZE: usize = 6;
 
 fn main() {
     let mut maze = generate_maze();
@@ -128,10 +128,7 @@ fn generate_solution(grid: &Vec<Vec<Vec<i32>>>) -> Vec<Vec<Vec<i32>>>{
         } else {
             current = options(&solution, current);
             solution[(current.0) as usize][(current.1) as usize][4] = 1;
-
-            // println!("current: {:?}", current);
-            // println!("option: {:?}", options(&solution, current));
-            // println!("productive option: {:?}", most_productive_path(&solution, current, cell_data(&solution, current), best_md, dst));
+            if current == options(&solution, current) { break; }
         }
     }
     solution

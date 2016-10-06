@@ -242,8 +242,8 @@ mod tests {
     #[test]
     fn can_generate_grid_of_nested_vecs() {
         let grid = generate_grid();
-        assert_eq!(8, grid.len());
-        assert_eq!(8, grid[0].len());
+        assert_eq!(4, grid.len());
+        assert_eq!(4, grid[0].len());
     }
 
     #[test]

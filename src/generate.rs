@@ -9,7 +9,6 @@ pub fn generate_maze(size: usize) -> Vec<Vec<Vec<i32>>> {
 
     while history.len() != 0 {
         grid[r][c][4] = 1;
-
         let check = populate_check(r, c, &grid);
 
         if check.len() != 0 {
@@ -46,7 +45,6 @@ pub fn generate_maze(size: usize) -> Vec<Vec<Vec<i32>>> {
             c = popped.1;
         }
     }
-
     grid
 }
 

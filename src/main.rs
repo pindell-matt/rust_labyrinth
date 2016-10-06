@@ -93,7 +93,6 @@ fn populate_check(r: usize, c: usize, grid: &Vec<Vec<Vec<i32>>>) -> Vec<String> 
     let mut check = vec![];
     if c > 0 && grid[r][c - 1][4] == 0 { check.push('L'.to_string()); };
     if r > 0 && grid[r - 1][c][4] == 0 { check.push('U'.to_string()); };
-
     if c < (SIZE - 1) && grid[r][c + 1][4] == 0 { check.push('R'.to_string()); };
     if r < (SIZE - 1) && grid[r + 1][c][4] == 0 { check.push('D'.to_string()); };
     check
@@ -111,30 +110,33 @@ fn are_equal(move_direction: &String, direction: char) -> bool {
 }
 
 fn generate_solution(grid: &Vec<Vec<Vec<i32>>>) -> Vec<Vec<Vec<i32>>>{
-    let mut solution = grid.clone();
     let src = (0, 0);
     let dst = ((SIZE - 1) as i32, (SIZE - 1) as i32);
-
+    let mut solution = grid.clone();
     let mut best_md = manhattan_dist(src, dst);
     let mut current = (0, 0);
     solution[(current.0) as usize][(current.1) as usize][4] = 1;
 
     while !cells_match(current, dst) {
-        if productive_path_available(&solution, current, best_md, dst) {
-            let path = most_productive_path(&solution, current, cell_data(&solution, current), best_md, dst);
+        if !productive_path(&solution, current, best_md, dst).is_empty() {
+            let path = productive_path(&solution, current, best_md, dst);
             current = path[0].1;
             best_md = manhattan_dist(current, dst);
             solution[(current.0) as usize][(current.1) as usize][4] = 1;
         } else {
-            current = options(&solution, current);
+            let mut original = current;
+            current = desperate_path(&solution, current);
             solution[(current.0) as usize][(current.1) as usize][4] = 1;
-            if current == options(&solution, current) { break; }
+
+            // move to previous position if stuck
+            if current == desperate_path(&solution, current) { current = original; }
+            if current == desperate_path(&solution, current) { break; }
         }
     }
     solution
 }
 
-fn options(grid: &Vec<Vec<Vec<i32>>>, curr: (i32, i32)) -> (i32, i32) {
+fn desperate_path(grid: &Vec<Vec<Vec<i32>>>, curr: (i32, i32)) -> (i32, i32) {
     let data = cell_data(&grid, curr);
     let mut results = curr;
     let left  = (curr.0, curr.1 - 1);
@@ -142,42 +144,33 @@ fn options(grid: &Vec<Vec<Vec<i32>>>, curr: (i32, i32)) -> (i32, i32) {
     let up    = (curr.0 - 1, curr.1);
     let down  = (curr.0 + 1, curr.1);
 
-    if data[0] == 1 && grid[(left.0) as usize][(left.1) as usize][4] == 0 { results = left };
-    if data[1] == 1 && grid[(up.0) as usize][(up.1) as usize][4] == 0 { results = up };
+    if data[0] == 1 && grid[(left.0) as usize][(left.1) as usize][4]   == 0 { results = left };
     if data[2] == 1 && grid[(right.0) as usize][(right.1) as usize][4] == 0 { results = right };
-    if data[3] == 1 && grid[(down.0) as usize][(down.1) as usize][4] == 0 { results = down };
+    if data[1] == 1 && grid[(up.0) as usize][(up.1) as usize][4]       == 0 { results = up };
+    if data[3] == 1 && grid[(down.0) as usize][(down.1) as usize][4]   == 0 { results = down };
 
     results
 }
 
-fn most_productive_path(grid: &Vec<Vec<Vec<i32>>>, curr: (i32, i32), curr_data: Vec<i32>, best_md: i32, dst: (i32, i32)) -> Vec<(i32, (i32, i32))> {
+fn productive_path(grid: &Vec<Vec<Vec<i32>>>, curr: (i32, i32), best_md: i32, dst: (i32, i32)) -> Vec<(i32, (i32, i32))> {
+    let curr_data = cell_data(&grid, curr);
     let mut paths = vec![];
     let left  = (curr.0, curr.1 - 1);
     let right = (curr.0, curr.1 + 1);
     let up    = (curr.0 - 1, curr.1);
     let down  = (curr.0 + 1, curr.1);
 
-    if curr_data[0] == 1 && manhattan_dist(left, dst) <= best_md && grid[(left.0) as usize][(left.1) as usize][4] == 0 { paths.push( (manhattan_dist(left, dst), left) ); }
-    if curr_data[1] == 1 && manhattan_dist(up, dst) <= best_md && grid[(up.0) as usize][(up.1) as usize][4] == 0 { paths.push( (manhattan_dist(up, dst), up) ); }
-    if curr_data[2] == 1 && manhattan_dist(right, dst) <= best_md && grid[(right.0) as usize][(right.1) as usize][4] == 0 { paths.push( (manhattan_dist(right, dst), right) ); }
-    if curr_data[3] == 1 && manhattan_dist(down, dst) <= best_md && grid[(down.0) as usize][(down.1) as usize][4] == 0 { paths.push( (manhattan_dist(down, dst), down) ); }
+    if curr_data[0] == 1 && manhattan_dist(left, dst) <= best_md &&
+        grid[(left.0) as usize][(left.1) as usize][4] == 0 { paths.push( (manhattan_dist(left, dst), left) ); }
+    if curr_data[1] == 1 && manhattan_dist(up, dst) <= best_md &&
+        grid[(up.0) as usize][(up.1) as usize][4] == 0 { paths.push( (manhattan_dist(up, dst), up) ); }
+    if curr_data[2] == 1 && manhattan_dist(right, dst) <= best_md &&
+        grid[(right.0) as usize][(right.1) as usize][4] == 0 { paths.push( (manhattan_dist(right, dst), right) ); }
+    if curr_data[3] == 1 && manhattan_dist(down, dst) <= best_md &&
+        grid[(down.0) as usize][(down.1) as usize][4] == 0 { paths.push( (manhattan_dist(down, dst), down) ); }
 
     paths.sort();
     paths
-}
-
-fn productive_path_available(grid: &Vec<Vec<Vec<i32>>>, curr: (i32, i32), best_md: i32, dst: (i32, i32)) -> bool {
-    let curr_data = cell_data(grid, curr);
-    let left  = (curr.0, curr.1 - 1);
-    let right = (curr.0, curr.1 + 1);
-    let up    = (curr.0 - 1, curr.1);
-    let down  = (curr.0 + 1, curr.1);
-
-    if curr_data[0] == 1 && manhattan_dist(left, dst) <= best_md && grid[(left.0) as usize][(left.1) as usize][4] == 0 { return true; }
-    if curr_data[1] == 1 && manhattan_dist(up, dst) <= best_md && grid[(up.0) as usize][(up.1) as usize][4] == 0 { return true; }
-    if curr_data[2] == 1 && manhattan_dist(right, dst) <= best_md && grid[(right.0) as usize][(right.1) as usize][4] == 0 { return true; }
-    if curr_data[3] == 1 && manhattan_dist(down, dst) <= best_md && grid[(down.0) as usize][(down.1) as usize][4] == 0 { return true; }
-    false
 }
 
 fn cell_data(grid: &Vec<Vec<Vec<i32>>>, coordinates: (i32, i32)) -> Vec<i32> {

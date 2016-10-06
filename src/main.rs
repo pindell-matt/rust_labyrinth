@@ -2,7 +2,7 @@ extern crate rand;
 
 use rand::{thread_rng, Rng};
 
-static SIZE: usize = 6;
+static SIZE: usize = 5;
 
 fn main() {
     let mut maze = generate_maze();
@@ -144,9 +144,9 @@ fn desperate_path(grid: &Vec<Vec<Vec<i32>>>, current: (i32, i32)) -> (i32, i32) 
     let up    = (current.0 - 1, current.1);
     let down  = (current.0 + 1, current.1);
 
-    if data[0] == 1 && grid[(left.0) as usize][(left.1) as usize][4]   == 0 { return left };
     if data[2] == 1 && grid[(right.0) as usize][(right.1) as usize][4] == 0 { return right };
     if data[3] == 1 && grid[(down.0) as usize][(down.1) as usize][4]   == 0 { return down };
+    if data[0] == 1 && grid[(left.0) as usize][(left.1) as usize][4]   == 0 { return left };
     if data[1] == 1 && grid[(up.0) as usize][(up.1) as usize][4]       == 0 { return up };
 
     current

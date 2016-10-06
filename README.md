@@ -1,5 +1,5 @@
 # Rust Labyrinth
-Simple Maze Generator in Rust
+### A Simple Maze Generator in Rust
 
 First, make sure [Rust](https://www.rust-lang.org/en-US/downloads.html) is installed.
 

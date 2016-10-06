@@ -2,19 +2,19 @@ extern crate rand;
 
 use rand::{thread_rng, Rng};
 
-static SIZE: usize = 5;
+static SIZE: usize = 4;
 
 fn main() {
-    let mut maze = generate_maze();
+    let maze = generate_maze();
 
-    let mut cleared_maze = reset_maze(maze);
-    print_to_console(&cleared_maze);
+    let unwalked_maze = reset_maze(maze);
+    print_to_console(&unwalked_maze);
 
-    let result = generate_solution(&cleared_maze);
+    let result = generate_solution(&unwalked_maze);
     print_to_console(&result);
 }
 
-fn reset_maze(mut maze: Vec<Vec<Vec<i32>>>) -> Vec<Vec<Vec<i32>>> {
+fn reset_maze(maze: Vec<Vec<Vec<i32>>>) -> Vec<Vec<Vec<i32>>> {
     let mut solution = vec![];
     for row in maze {
         let mut new_row = vec![];
@@ -125,7 +125,7 @@ fn generate_solution(grid: &Vec<Vec<Vec<i32>>>) -> Vec<Vec<Vec<i32>>>{
             best_md = manhattan_dist(current, dst);
             solution[(current.0) as usize][(current.1) as usize][4] = 1;
         } else {
-            let mut original = current;
+            let original = current;
             current = desperate_path(&solution, current);
             solution[(current.0) as usize][(current.1) as usize][4] = 1;
 
